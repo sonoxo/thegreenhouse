@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "ecosystem_version": "4.0.0",
+  "repo": "sonoxo/thegreenhouse",
+  "plane_id": "green-house",
+  "role": "public-situational-intelligence",
+  "control_root": "sonoxo/gpt-doug-llm",
+  "execution_plane": "sonoxo/zyra",
+  "responsibilities": ["environment", "bio/pharma public context", "regulatory awareness", "global events", "maps", "public-source correlation"],
+  "collective_ai_layers": ["classical_ai", "machine_learning", "neural_networks", "deep_learning", "generative_ai", "agentic_ai"],
+  "authority_boundary": "Public-source intelligence and model-assisted analysis remain distinct from medical, regulatory, emergency, classified or governmental determinations."
+}
