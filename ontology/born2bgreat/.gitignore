@@ -1,0 +1,12 @@
+# NEVER commit live Born2BGreat patient data to this public repository.
+instances/
+exports/
+attachments/
+identity-vault/
+clinical-data/
+part2-data/
+psychotherapy-notes/
+*.phi.*
+*.ephi.*
+*.patient-export.*
+*.referral-packet.*
