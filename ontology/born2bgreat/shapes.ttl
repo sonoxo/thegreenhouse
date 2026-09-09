@@ -1,0 +1,62 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix b2g: <urn:born2bgreat:greenhouse:behavioral-health:v1:> .
+
+b2g:PatientShape
+    a sh:NodeShape ;
+    sh:targetClass b2g:Patient ;
+    sh:property [
+        sh:path b2g:patientKey ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:closed false .
+
+b2g:ClinicalResourceShape
+    a sh:NodeShape ;
+    sh:targetClass b2g:ClinicalResource ;
+    sh:property [
+        sh:path b2g:sensitivity ;
+        sh:minCount 1 ;
+    ] .
+
+b2g:ProgressNoteShape
+    a sh:NodeShape ;
+    sh:targetClass b2g:ProgressNote ;
+    sh:property [
+        sh:path b2g:patientKey ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    sh:property [
+        sh:path b2g:noteStyle ;
+        sh:minCount 1 ;
+        sh:in ("BIRP" "SOAP" "DAP" "OTHER") ;
+    ] ;
+    sh:property [
+        sh:path b2g:status ;
+        sh:minCount 1 ;
+        sh:in ("DRAFT" "SIGNED" "AMENDED" "ENTERED_IN_ERROR") ;
+    ] ;
+    sh:property [
+        sh:path b2g:version ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+    ] .
+
+b2g:AuditEventShape
+    a sh:NodeShape ;
+    sh:targetClass b2g:AuditEvent ;
+    sh:property [
+        sh:path b2g:occurredAt ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+    ] ;
+    sh:property [
+        sh:path b2g:purposeOfUse ;
+        sh:minCount 1 ;
+    ] .

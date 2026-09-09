@@ -1,0 +1,26 @@
+{
+  "@context": {
+    "b2g": "urn:born2bgreat:greenhouse:behavioral-health:v1:",
+    "type": "@type",
+    "id": "@id",
+    "patientKey": "b2g:patientKey",
+    "sensitivity": {"@id":"b2g:sensitivity","@type":"@id"},
+    "status": "b2g:status",
+    "version": "b2g:version"
+  },
+  "@id": "urn:synthetic:b2g:progress-note:0001",
+  "@type": "b2g:ProgressNote",
+  "patientKey": "SYNTHETIC-PATIENT-0001",
+  "sensitivity": ["b2g:PHI", "b2g:E_PHI", "b2g:BEHAVIORAL_HEALTH"],
+  "b2g:synthetic": true,
+  "b2g:noteStyle": "BIRP",
+  "status": "SIGNED",
+  "version": 1,
+  "b2g:behaviorSection": "Synthetic example: participant arrived on time, engaged appropriately, and discussed a fictional recovery goal.",
+  "b2g:interventionSection": "Synthetic example: staff used motivational interviewing and a structured coping-skills exercise.",
+  "b2g:responseSection": "Synthetic example: participant identified two coping strategies and demonstrated understanding of the fictional exercise.",
+  "b2g:planSection": "Synthetic example: participant will practice the identified coping strategies and review progress at the next fictional encounter.",
+  "b2g:signedAt": "2026-09-09T13:00:00Z",
+  "b2g:integrityHash": "sha256:SYNTHETIC-NOT-A-REAL-HASH",
+  "b2g:sourceSystem": "SYNTHETIC_TEST_FIXTURE"
+}
