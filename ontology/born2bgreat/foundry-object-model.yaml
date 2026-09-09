@@ -1,0 +1,168 @@
+schema_version: 1
+module: B2G-BH-1.0
+platform_target: Palantir Foundry Ontology
+namespace: "urn:born2bgreat:greenhouse:behavioral-health:v1:"
+status: design-ready
+
+security_markings:
+  - B2G_PHI
+  - B2G_EPHI
+  - B2G_DIRECT_IDENTIFIER
+  - B2G_BEHAVIORAL_HEALTH
+  - B2G_SUD_PART2
+  - B2G_PSYCHOTHERAPY_NOTE
+  - B2G_HIGHLY_SENSITIVE
+  - B2G_DEIDENTIFIED
+
+object_types:
+  B2GPatient:
+    primary_key: patient_key
+    zone: clinical_graph
+    properties:
+      patient_key: {type: string, required: true}
+      record_status: {type: string, enum: [ACTIVE, INACTIVE, DECEASED, MERGED]}
+
+  B2GPatientIdentity:
+    primary_key: identity_key
+    zone: identity_vault
+    properties:
+      identity_key: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      legal_name: {type: string, sensitive: true}
+      date_of_birth: {type: date, sensitive: true}
+      medicaid_identifier: {type: string, sensitive: true}
+      address: {type: string, sensitive: true}
+      phone: {type: string, sensitive: true}
+      email: {type: string, sensitive: true}
+    repository_instances_allowed: false
+
+  B2GEpisodeOfCare:
+    primary_key: episode_id
+    zone: clinical_graph
+    properties:
+      episode_id: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      program_code: {type: string}
+      start_date: {type: date}
+      end_date: {type: date}
+      status: {type: string, enum: [PLANNED, ACTIVE, ON_HOLD, COMPLETED, CANCELLED]}
+
+  B2GEncounter:
+    primary_key: encounter_id
+    zone: clinical_graph
+    properties:
+      encounter_id: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      episode_id: {type: string, required: true}
+      start_at: {type: datetime, required: true}
+      end_at: {type: datetime}
+      service_type: {type: string}
+      modality: {type: string, enum: [IN_PERSON, TELEHEALTH, PHONE, COMMUNITY, HOME_VISIT, OTHER]}
+      practitioner_ids: {type: string_array}
+
+  B2GProgressNote:
+    primary_key: note_id
+    zone: clinical_document_store
+    properties:
+      note_id: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      encounter_id: {type: string, required: true}
+      note_style: {type: string, enum: [BIRP, SOAP, DAP, OTHER]}
+      behavior_section: {type: string}
+      intervention_section: {type: string}
+      response_section: {type: string}
+      plan_section: {type: string}
+      status: {type: string, enum: [DRAFT, SIGNED, AMENDED, ENTERED_IN_ERROR]}
+      version: {type: integer, minimum: 1}
+      signed_at: {type: datetime}
+      integrity_hash: {type: string}
+      provenance_id: {type: string, required: true}
+    mutation_rule: signed_versions_are_append_only
+
+  B2GServicePlan:
+    primary_key: service_plan_id
+    zone: clinical_graph
+    properties:
+      service_plan_id: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      episode_id: {type: string, required: true}
+      status: {type: string, enum: [DRAFT, ACTIVE, SUPERSEDED, CLOSED]}
+
+  B2GGoal:
+    primary_key: goal_id
+    zone: clinical_graph
+    properties:
+      goal_id: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      service_plan_id: {type: string, required: true}
+      description: {type: string}
+      status: {type: string, enum: [PROPOSED, ACTIVE, ACHIEVED, NOT_ACHIEVED, CANCELLED]}
+
+  B2GRiskAssessment:
+    primary_key: risk_assessment_id
+    zone: restricted_clinical
+    properties:
+      risk_assessment_id: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      assessed_at: {type: datetime, required: true}
+      suicide_self_harm_risk: {type: string, enum: [NOT_ASSESSED, NONE_IDENTIFIED, LOW, MODERATE, HIGH, IMMINENT]}
+      violence_risk: {type: string, enum: [NOT_ASSESSED, NONE_IDENTIFIED, LOW, MODERATE, HIGH, IMMINENT]}
+      acute_psychiatric_risk: {type: string, enum: [NOT_ASSESSED, NONE_IDENTIFIED, LOW, MODERATE, HIGH, IMMINENT]}
+      withdrawal_medical_risk: {type: string, enum: [NOT_ASSESSED, NONE_IDENTIFIED, LOW, MODERATE, HIGH, IMMINENT]}
+
+  B2GConsentDirective:
+    primary_key: consent_id
+    zone: governance
+    properties:
+      consent_id: {type: string, required: true}
+      patient_key: {type: string, required: true}
+      status: {type: string, enum: [DRAFT, ACTIVE, REVOKED, EXPIRED]}
+      purpose_codes: {type: string_array}
+      data_category_codes: {type: string_array}
+      recipient_ids: {type: string_array}
+      effective_start: {type: datetime}
+      effective_end: {type: datetime}
+
+  B2GAuditEvent:
+    primary_key: audit_event_id
+    zone: immutable_audit
+    properties:
+      audit_event_id: {type: string, required: true}
+      occurred_at: {type: datetime, required: true}
+      actor_id: {type: string, required: true}
+      action: {type: string, required: true}
+      resource_type: {type: string, required: true}
+      resource_id: {type: string, required: true}
+      patient_key: {type: string}
+      purpose_of_use: {type: string, required: true}
+      decision: {type: string, enum: [ALLOW, DENY]}
+      break_glass: {type: boolean}
+    mutation_rule: append_only
+
+link_types:
+  - {id: IDENTITY_IDENTIFIES_PATIENT, from: B2GPatientIdentity, to: B2GPatient, cardinality: many_to_one}
+  - {id: PATIENT_HAS_EPISODE, from: B2GPatient, to: B2GEpisodeOfCare, cardinality: one_to_many}
+  - {id: EPISODE_HAS_ENCOUNTER, from: B2GEpisodeOfCare, to: B2GEncounter, cardinality: one_to_many}
+  - {id: ENCOUNTER_HAS_NOTE, from: B2GEncounter, to: B2GProgressNote, cardinality: one_to_many}
+  - {id: EPISODE_HAS_SERVICE_PLAN, from: B2GEpisodeOfCare, to: B2GServicePlan, cardinality: one_to_many}
+  - {id: SERVICE_PLAN_HAS_GOAL, from: B2GServicePlan, to: B2GGoal, cardinality: one_to_many}
+  - {id: PATIENT_HAS_CONSENT, from: B2GPatient, to: B2GConsentDirective, cardinality: one_to_many}
+
+actions:
+  - OPEN_EPISODE
+  - RECORD_ENCOUNTER
+  - DRAFT_PROGRESS_NOTE
+  - SIGN_PROGRESS_NOTE
+  - AMEND_PROGRESS_NOTE
+  - UPDATE_SERVICE_PLAN
+  - RECORD_RISK_ASSESSMENT
+  - GRANT_CONSENT
+  - REVOKE_CONSENT
+  - DISCLOSE_RECORDS
+  - EXPORT_PATIENT_RECORD
+  - BREAK_GLASS_ACCESS
+  - CLOSE_EPISODE
+
+repository_rule:
+  public_repo_may_store: [schema, policy_vocabulary, documentation, synthetic_examples]
+  public_repo_may_not_store: [live_phi, live_ephi, patient_identifiers, real_clinical_notes, real_sud_records, real_referrals, real_medicaid_ids]
