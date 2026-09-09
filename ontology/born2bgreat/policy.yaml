@@ -1,0 +1,143 @@
+schema_version: 1
+module: B2G-BH-1.0
+owner_domain: born2bgreat.org
+repository_data_posture: schema-and-synthetic-only
+production_instance_target: GREENHOUSE::B2G_SECURE_CLINICAL_VAULT
+
+regulatory_overlays:
+  - id: HIPAA_PRIVACY
+    scope: PHI uses and disclosures
+  - id: HIPAA_SECURITY
+    scope: ePHI administrative, physical, and technical safeguards
+  - id: CFR42_PART2
+    scope: qualifying substance-use-disorder patient records
+  - id: STATE_AND_PAYER
+    scope: Virginia, DBHDS, Medicaid, payer, licensing, and retention overlays
+    status: organization_policy_required
+
+sensitivity_labels:
+  PUBLIC:
+    live_phi_allowed: false
+  INTERNAL:
+    live_phi_allowed: false
+  PHI:
+    live_phi_allowed: true
+    storage_zone: protected_clinical
+  E_PHI:
+    live_phi_allowed: true
+    storage_zone: protected_clinical
+  DIRECT_IDENTIFIER:
+    live_phi_allowed: true
+    storage_zone: identity_vault
+  BEHAVIORAL_HEALTH:
+    live_phi_allowed: true
+    storage_zone: protected_clinical
+  SUD_PART2:
+    live_phi_allowed: true
+    storage_zone: part2_segment
+    additional_policy_check: true
+  PSYCHOTHERAPY_NOTE:
+    live_phi_allowed: true
+    storage_zone: psychotherapy_segment
+    additional_policy_check: true
+  HIGHLY_SENSITIVE:
+    live_phi_allowed: true
+    storage_zone: restricted_clinical
+    additional_policy_check: true
+  DEIDENTIFIED:
+    live_phi_allowed: false
+    storage_zone: analytics
+  LIMITED_DATASET:
+    live_phi_allowed: conditional
+    storage_zone: controlled_analytics
+    additional_policy_check: true
+
+roles:
+  - CLINICAL_SUPERVISOR
+  - QMHP
+  - CASE_MANAGER
+  - PEER_RECOVERY_SPECIALIST
+  - PRESCRIBER
+  - BILLING
+  - COMPLIANCE
+  - PRIVACY_OFFICER
+  - SYSTEM_ADMIN
+  - RESEARCH_ANALYST
+  - EXTERNAL_PROVIDER
+
+purposes_of_use:
+  - TREATMENT
+  - PAYMENT
+  - HEALTHCARE_OPERATIONS
+  - PATIENT_REQUEST
+  - AUTHORIZED_DISCLOSURE
+  - REQUIRED_BY_LAW
+  - OVERSIGHT
+  - RESEARCH
+  - EMERGENCY
+  - SECURITY_ADMINISTRATION
+
+access_decision:
+  model: ABAC
+  default: DENY
+  required_inputs:
+    - actor_active
+    - actor_role
+    - actor_organization
+    - purpose_of_use
+    - resource_sensitivity
+    - patient_or_episode_relationship
+    - consent_or_authorization_state
+    - part2_policy_state
+    - psychotherapy_note_policy_state
+    - minimum_necessary_scope
+    - request_context
+  break_glass:
+    allowed: policy_controlled
+    requirements:
+      - explicit_reason
+      - elevated_authentication
+      - immutable_audit_event
+      - post_event_review
+
+record_lifecycle:
+  progress_note:
+    states: [DRAFT, SIGNED, AMENDED, ENTERED_IN_ERROR]
+    signed_record_mutation: append_only_amendment
+  service_plan:
+    states: [DRAFT, ACTIVE, SUPERSEDED, CLOSED]
+  consent:
+    states: [DRAFT, ACTIVE, REVOKED, EXPIRED]
+  referral:
+    states: [RECEIVED, SCREENING, ACCEPTED, DECLINED, WITHDRAWN, CLOSED]
+  episode:
+    states: [PLANNED, ACTIVE, ON_HOLD, COMPLETED, CANCELLED]
+
+audit_events_required_for:
+  - READ
+  - CREATE
+  - UPDATE
+  - SIGN
+  - AMEND
+  - PRINT
+  - EXPORT
+  - DISCLOSE
+  - DELETE_REQUEST
+  - BREAK_GLASS
+  - CONSENT_CHANGE
+  - ACCESS_DENIED
+
+repository_guardrail:
+  prohibit_live_instances: true
+  prohibited_content_examples:
+    - legal_name
+    - date_of_birth
+    - social_security_number
+    - medicaid_identifier
+    - street_address
+    - phone_number
+    - email_address
+    - real_progress_note
+    - real_referral_packet
+    - real_diagnosis_linked_to_person
+    - real_sud_treatment_record
